@@ -1,473 +1,1087 @@
-# Buntah2.github.io
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plant Life 🌱</title>
+<title>🌱 3D Plant Life</title>
 
 <style>
-    * {
-        box-sizing: border-box;
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #87ceeb;
+}
+
+#game {
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    color: white;
+}
+
+.panel {
+    pointer-events: auto;
+    background: rgba(20, 45, 30, 0.88);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+
+#topbar {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+#title {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.stat {
+    background: rgba(255,255,255,.12);
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+#shop {
+    position: absolute;
+    left: 15px;
+    bottom: 15px;
+    width: 260px;
+}
+
+#selected {
+    position: absolute;
+    right: 15px;
+    bottom: 15px;
+    width: 290px;
+}
+
+h2, h3, p {
+    margin-top: 0;
+}
+
+button {
+    border: 0;
+    padding: 10px 13px;
+    margin: 4px;
+    border-radius: 9px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #7bd66f;
+    color: #17351b;
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.bar {
+    height: 12px;
+    background: rgba(255,255,255,.18);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 5px 0 10px;
+}
+
+.fill {
+    height: 100%;
+    width: 50%;
+    transition: width .3s;
+}
+
+.water {
+    background: #4bbcff;
+}
+
+.sun {
+    background: #ffd447;
+}
+
+.health {
+    background: #5fe27b;
+}
+
+#message {
+    position: absolute;
+    top: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20,45,30,.9);
+    padding: 12px 18px;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity .3s;
+}
+
+#help {
+    position: absolute;
+    top: 95px;
+    left: 15px;
+    font-size: 13px;
+    opacity: .8;
+}
+
+@media (max-width: 700px) {
+    #topbar {
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: linear-gradient(#bde7ff, #dff7d8);
-        color: #24352a;
+    #shop,
+    #selected {
+        width: calc(50% - 22px);
     }
 
-    header {
-        background: #4d9b62;
-        color: white;
-        padding: 18px;
-        text-align: center;
-        box-shadow: 0 3px 10px #0003;
+    #help {
+        display: none;
+    }
+}
+
+@media (max-width: 500px) {
+    #shop,
+    #selected {
+        width: calc(100% - 30px);
     }
 
-    header h1 {
-        margin: 0;
-        font-size: 32px;
+    #shop {
+        bottom: 15px;
     }
 
-    .stats {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap;
-        margin-top: 10px;
+    #selected {
+        bottom: 180px;
     }
-
-    .stat {
-        background: #ffffff33;
-        padding: 8px 14px;
-        border-radius: 20px;
-    }
-
-    main {
-        max-width: 1100px;
-        margin: auto;
-        padding: 20px;
-    }
-
-    .garden {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 18px;
-    }
-
-    .plant-card {
-        background: #ffffffdd;
-        border-radius: 18px;
-        padding: 18px;
-        text-align: center;
-        box-shadow: 0 5px 15px #0002;
-        transition: transform 0.2s;
-    }
-
-    .plant-card:hover {
-        transform: translateY(-4px);
-    }
-
-    .plant {
-        font-size: 80px;
-        margin: 15px;
-    }
-
-    .bar-container {
-        margin: 10px 0;
-        text-align: left;
-    }
-
-    .bar {
-        height: 14px;
-        background: #ddd;
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    .bar-fill {
-        height: 100%;
-        transition: width 0.4s;
-    }
-
-    .water {
-        background: #3498db;
-    }
-
-    .sun {
-        background: #f1c40f;
-    }
-
-    .health {
-        background: #2ecc71;
-    }
-
-    button {
-        border: none;
-        border-radius: 10px;
-        padding: 10px 14px;
-        margin: 4px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: transform 0.15s, opacity 0.15s;
-    }
-
-    button:hover {
-        transform: scale(1.05);
-    }
-
-    button:active {
-        transform: scale(.96);
-    }
-
-    .water-btn {
-        background: #3498db;
-        color: white;
-    }
-
-    .sun-btn {
-        background: #f1c40f;
-        color: #333;
-    }
-
-    .buy-btn {
-        background: #9b59b6;
-        color: white;
-    }
-
-    .panel {
-        background: #ffffffdd;
-        border-radius: 18px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 15px #0002;
-    }
-
-    .shop {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .shop-item {
-        background: #f5f5f5;
-        border-radius: 12px;
-        padding: 12px;
-        min-width: 150px;
-    }
-
-    .achievement {
-        display: inline-block;
-        background: #fff4b8;
-        padding: 10px;
-        margin: 5px;
-        border-radius: 10px;
-    }
-
-    .locked {
-        opacity: .45;
-    }
-
-    #event {
-        text-align: center;
-        font-weight: bold;
-        min-height: 25px;
-        color: #7d4e00;
-    }
-
-    @media (max-width: 600px) {
-        header h1 {
-            font-size: 25px;
-        }
-
-        .plant {
-            font-size: 65px;
-        }
-    }
+}
 </style>
 </head>
 
 <body>
 
-<header>
-    <h1>🌱 Plant Life</h1>
+<div id="game"></div>
 
-    <div class="stats">
-        <div class="stat">🪙 Coins: <span id="coins">0</span></div>
-        <div class="stat">⭐ Level: <span id="level">1</span></div>
-        <div class="stat">✨ XP: <span id="xp">0</span></div>
-    </div>
-</header>
+<div id="ui">
 
-<main>
+    <div id="topbar">
 
-    <div class="panel">
-        <h2>🌦️ Garden Status</h2>
-        <p id="weather">☀️ Sunny day</p>
-        <p id="event"></p>
-    </div>
+        <div class="panel">
+            <div id="title">🌱 3D Plant Life</div>
+            <small>Take care of your garden</small>
+        </div>
 
-    <div class="panel">
-        <h2>🌿 Your Garden</h2>
-        <div id="garden" class="garden"></div>
+        <div class="stats panel">
+            <div class="stat">🪙 <span id="coins">100</span></div>
+            <div class="stat">⭐ Lv <span id="level">1</span></div>
+            <div class="stat">🌱 <span id="plantCount">1</span></div>
+        </div>
+
     </div>
 
-    <div class="panel">
-        <h2>🛒 Seed Shop</h2>
-        <div id="shop" class="shop"></div>
+    <div id="help">
+        🖱️ Drag to look around • Scroll to zoom • Click a plant to select it
     </div>
 
-    <div class="panel">
-        <h2>🏆 Achievements</h2>
-        <div id="achievements"></div>
+    <div id="message"></div>
+
+    <div id="shop" class="panel">
+        <h3>🌿 Seed Shop</h3>
+
+        <button onclick="buyPlant('sunflower')">
+            🌻 Sunflower — Free
+        </button>
+
+        <button onclick="buyPlant('cactus')">
+            🌵 Cactus — 50
+        </button>
+
+        <button onclick="buyPlant('tulip')">
+            🌷 Tulip — 100
+        </button>
+
+        <button onclick="buyPlant('rose')">
+            🌹 Rose — 175
+        </button>
+
+        <button onclick="buyPlant('tree')">
+            🌳 Tree — 300
+        </button>
     </div>
 
-    <div class="panel">
-        <h2>📊 Garden Statistics</h2>
-        <p>🌱 Plants grown: <span id="plantsGrown">0</span></p>
-        <p>💧 Times watered: <span id="watered">0</span></p>
-        <p>☀️ Times given sunlight: <span id="sunlight">0</span></p>
-        <p>🌧️ Random events: <span id="events">0</span></p>
+    <div id="selected" class="panel">
+        <h3>🌱 Select a plant</h3>
+        <p>Click a plant in your garden.</p>
     </div>
 
-</main>
+</div>
 
-<script>
+<script type="module">
+
+import * as THREE from
+    "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+import { OrbitControls } from
+    "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/controls/OrbitControls.js";
+
+
 /* =====================================================
-   PLANT LIFE
-   ===================================================== */
+   GAME DATA
+===================================================== */
 
-const plantTypes = {
+const PLANTS = {
+
     sunflower: {
         name: "Sunflower",
         emoji: "🌻",
-        price: 0,
-        growthSpeed: 1.0,
+        cost: 0,
+        growth: 1.0,
         waterNeed: 1.0,
-        sunNeed: 1.3
+        sunNeed: 1.2,
+        color: 0xffd21f
     },
 
     cactus: {
         name: "Cactus",
         emoji: "🌵",
-        price: 50,
-        growthSpeed: 0.7,
-        waterNeed: 0.35,
-        sunNeed: 1.2
+        cost: 50,
+        growth: .7,
+        waterNeed: .3,
+        sunNeed: 1.3,
+        color: 0x55aa55
     },
 
     tulip: {
         name: "Tulip",
         emoji: "🌷",
-        price: 100,
-        growthSpeed: 1.2,
-        waterNeed: 1.2,
-        sunNeed: 0.9
+        cost: 100,
+        growth: 1.2,
+        waterNeed: 1.1,
+        sunNeed: .9,
+        color: 0xff6688
     },
 
     rose: {
         name: "Rose",
         emoji: "🌹",
-        price: 175,
-        growthSpeed: 0.8,
+        cost: 175,
+        growth: .85,
         waterNeed: 1.1,
-        sunNeed: 1.0
+        sunNeed: 1,
+        color: 0xdd3355
     },
 
-    lavender: {
-        name: "Lavender",
-        emoji: "🪻",
-        price: 250,
-        growthSpeed: 0.9,
-        waterNeed: 0.8,
-        sunNeed: 1.0
-    },
-
-    clover: {
-        name: "Clover",
-        emoji: "🍀",
-        price: 350,
-        growthSpeed: 1.4,
-        waterNeed: 1.0,
-        sunNeed: 0.7
-    },
-
-    palm: {
-        name: "Mini Palm",
-        emoji: "🌴",
-        price: 500,
-        growthSpeed: 0.6,
-        waterNeed: 1.3,
-        sunNeed: 1.4
+    tree: {
+        name: "Tree",
+        emoji: "🌳",
+        cost: 300,
+        growth: .5,
+        waterNeed: 1.4,
+        sunNeed: 1.1,
+        color: 0x3d9b46
     }
 };
 
 
 /* =====================================================
-   GAME STATE
-   ===================================================== */
+   SAVE DATA
+===================================================== */
 
-let game = {
+let save = {
+
     coins: 100,
-    xp: 0,
+
     level: 1,
 
-    plantsGrown: 0,
-    watered: 0,
-    sunlight: 0,
-    events: 0,
+    xp: 0,
 
-    plants: [
-        createPlant("sunflower")
-    ],
+    plants: [],
 
-    unlocked: ["sunflower"],
-
-    lastPlayed: Date.now(),
-
-    achievements: []
+    lastPlayed: Date.now()
 };
 
 
-/* =====================================================
-   CREATE PLANT
-   ===================================================== */
+const stored =
+    localStorage.getItem("3DPlantLife");
 
-function createPlant(type) {
-    return {
-        id: Date.now() + Math.random(),
+if (stored) {
 
-        type: type,
-
-        water: 75,
-        sunlight: 75,
-        health: 100,
-
-        growth: 0,
-
-        stage: 0,
-
-        mature: false
-    };
-}
-
-
-/* =====================================================
-   LOAD SAVE
-   ===================================================== */
-
-const saved = localStorage.getItem("plantLifeSave");
-
-if (saved) {
     try {
-        game = JSON.parse(saved);
 
-        applyOfflineProgress();
+        save = JSON.parse(stored);
+
     } catch {
-        console.log("Save file was corrupted.");
+
+        console.log("Could not load save.");
     }
 }
 
 
 /* =====================================================
-   SAVE
-   ===================================================== */
+   THREE.JS
+===================================================== */
 
-function saveGame() {
-    game.lastPlayed = Date.now();
+const scene =
+    new THREE.Scene();
 
-    localStorage.setItem(
-        "plantLifeSave",
-        JSON.stringify(game)
+scene.background =
+    new THREE.Color(0x87ceeb);
+
+scene.fog =
+    new THREE.Fog(0x87ceeb, 25, 70);
+
+
+const camera =
+    new THREE.PerspectiveCamera(
+        60,
+        innerWidth / innerHeight,
+        .1,
+        200
+    );
+
+camera.position.set(
+    10,
+    10,
+    15
+);
+
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(devicePixelRatio, 2)
+);
+
+renderer.shadowMap.enabled = true;
+
+document
+    .getElementById("game")
+    .appendChild(renderer.domElement);
+
+
+const controls =
+    new OrbitControls(
+        camera,
+        renderer.domElement
+    );
+
+controls.target.set(
+    0,
+    1,
+    0
+);
+
+controls.enableDamping = true;
+
+controls.minDistance = 6;
+
+controls.maxDistance = 35;
+
+
+/* =====================================================
+   LIGHTING
+===================================================== */
+
+const ambient =
+    new THREE.HemisphereLight(
+        0xbdeeff,
+        0x315b2f,
+        2
+    );
+
+scene.add(ambient);
+
+
+const sun =
+    new THREE.DirectionalLight(
+        0xffffff,
+        3
+    );
+
+sun.position.set(
+    10,
+    20,
+    10
+);
+
+sun.castShadow = true;
+
+scene.add(sun);
+
+
+/* =====================================================
+   GROUND
+===================================================== */
+
+const groundGeometry =
+    new THREE.PlaneGeometry(
+        60,
+        60
+    );
+
+const groundMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0x55a84e
+    });
+
+const ground =
+    new THREE.Mesh(
+        groundGeometry,
+        groundMaterial
+    );
+
+ground.rotation.x =
+    -Math.PI / 2;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+
+/* =====================================================
+   PATH
+===================================================== */
+
+const pathMaterial =
+    new THREE.MeshStandardMaterial({
+        color: 0xc5a16b
+    });
+
+const path =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            5,
+            60
+        ),
+        pathMaterial
+    );
+
+path.rotation.x =
+    -Math.PI / 2;
+
+path.position.y =
+    .01;
+
+scene.add(path);
+
+
+/* =====================================================
+   GARDEN
+===================================================== */
+
+const gardenGroup =
+    new THREE.Group();
+
+scene.add(gardenGroup);
+
+
+/* =====================================================
+   PLANT OBJECTS
+===================================================== */
+
+const plantMeshes =
+    new Map();
+
+
+function createPot() {
+
+    const pot =
+        new THREE.Group();
+
+    const body =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .55,
+                .42,
+                .7,
+                16
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xb85f35
+            })
+        );
+
+    body.position.y =
+        .35;
+
+    body.castShadow = true;
+
+    pot.add(body);
+
+
+    const dirt =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .43,
+                .43,
+                .05,
+                16
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x51351e
+            })
+        );
+
+    dirt.position.y =
+        .71;
+
+    pot.add(dirt);
+
+    return pot;
+}
+
+
+function createPlantMesh(type) {
+
+    const info =
+        PLANTS[type];
+
+    const group =
+        new THREE.Group();
+
+
+    /* STEM */
+
+    const stem =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                .07,
+                .09,
+                1.4,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0x3d873c
+            })
+        );
+
+    stem.position.y =
+        1.4;
+
+    stem.castShadow = true;
+
+    group.add(stem);
+
+
+    /* LEAVES */
+
+    for (
+        let i = 0;
+        i < 4;
+        i++
+    ) {
+
+        const leaf =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    .35,
+                    10,
+                    8
+                ),
+                new THREE.MeshStandardMaterial({
+                    color: 0x45a84b
+                })
+            );
+
+        const angle =
+            i * Math.PI / 2;
+
+        leaf.position.set(
+            Math.cos(angle) * .35,
+            1.35 + i * .08,
+            Math.sin(angle) * .35
+        );
+
+        leaf.scale.set(
+            1.5,
+            .35,
+            .7
+        );
+
+        leaf.rotation.y =
+            angle;
+
+        leaf.castShadow = true;
+
+        group.add(leaf);
+    }
+
+
+    /* FLOWER / TREE TOP */
+
+    if (type === "tree") {
+
+        const crown =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    1.25,
+                    16,
+                    12
+                ),
+                new THREE.MeshStandardMaterial({
+                    color: 0x3e9c48
+                })
+            );
+
+        crown.position.y =
+            2.8;
+
+        crown.castShadow = true;
+
+        group.add(crown);
+
+    } else {
+
+        const flower =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    .5,
+                    12,
+                    8
+                ),
+                new THREE.MeshStandardMaterial({
+                    color: info.color
+                })
+            );
+
+        flower.position.y =
+            2.15;
+
+        flower.castShadow = true;
+
+        group.add(flower);
+    }
+
+
+    return group;
+}
+
+
+/* =====================================================
+   ADD PLANT
+===================================================== */
+
+function addPlant(type, data = null) {
+
+    const plant = {
+
+        id:
+            data?.id ??
+            crypto.randomUUID(),
+
+        type,
+
+        x:
+            data?.x ??
+            (Math.random() * 18 - 9),
+
+        z:
+            data?.z ??
+            (Math.random() * 18 - 9),
+
+        water:
+            data?.water ?? 75,
+
+        sunlight:
+            data?.sunlight ?? 75,
+
+        health:
+            data?.health ?? 100,
+
+        growth:
+            data?.growth ?? 0,
+
+        mature:
+            data?.mature ?? false
+    };
+
+
+    save.plants.push(plant);
+
+
+    const pot =
+        createPot();
+
+    pot.position.set(
+        plant.x,
+        0,
+        plant.z
+    );
+
+    gardenGroup.add(pot);
+
+
+    const plantMesh =
+        createPlantMesh(type);
+
+    plantMesh.position.y =
+        .72;
+
+    pot.add(plantMesh);
+
+
+    plantMeshes.set(
+        plant.id,
+        {
+            pot,
+            plantMesh,
+            data: plant
+        }
+    );
+
+
+    updatePlantVisual(
+        plant
+    );
+}
+
+
+/* =====================================================
+   PLANT VISUAL GROWTH
+===================================================== */
+
+function updatePlantVisual(plant) {
+
+    const object =
+        plantMeshes.get(
+            plant.id
+        );
+
+    if (!object) return;
+
+
+    const scale =
+        .25 +
+        Math.min(
+            plant.growth,
+            100
+        ) / 100 * .9;
+
+
+    object.plantMesh.scale.set(
+        scale,
+        scale,
+        scale
+    );
+
+
+    if (plant.health < 25) {
+
+        object.plantMesh.rotation.z =
+            Math.sin(
+                Date.now() * .002
+            ) * .08;
+
+    } else {
+
+        object.plantMesh.rotation.z =
+            0;
+    }
+}
+
+
+/* =====================================================
+   DEFAULT PLANT
+===================================================== */
+
+if (
+    save.plants.length === 0
+) {
+
+    addPlant(
+        "sunflower",
+        {
+            x: 0,
+            z: 0
+        }
+    );
+}
+
+
+/* =====================================================
+   RESTORE SAVED PLANTS
+===================================================== */
+
+else {
+
+    const oldPlants =
+        [...save.plants];
+
+    save.plants = [];
+
+    oldPlants.forEach(
+        plant =>
+            addPlant(
+                plant.type,
+                plant
+            )
     );
 }
 
 
 /* =====================================================
    OFFLINE PROGRESS
-   ===================================================== */
+===================================================== */
 
-function applyOfflineProgress() {
+const elapsed =
+    Math.min(
+        (Date.now() - save.lastPlayed)
+        / 1000,
+        60 * 60 * 24
+    );
 
-    const now = Date.now();
+const hours =
+    elapsed / 3600;
 
-    const elapsed =
-        (now - game.lastPlayed) / 1000;
 
-    /*
-       Plants lose resources while you're away.
-       The calculation is capped so extremely long
-       absences don't completely destroy the garden.
-    */
-
-    const hours =
-        Math.min(elapsed / 3600, 24);
-
-    game.plants.forEach(plant => {
-
-        plant.water -= hours * 4;
-        plant.sunlight -= hours * 3;
+save.plants.forEach(
+    plant => {
 
         plant.water =
-            Math.max(0, plant.water);
-
-        plant.sunlight =
-            Math.max(0, plant.sunlight);
-
-        updatePlantHealth(plant);
-
-        if (
-            plant.water > 30 &&
-            plant.sunlight > 30 &&
-            plant.health > 20
-        ) {
-            growPlant(
-                plant,
+            Math.max(
+                0,
+                plant.water -
                 hours * 4
             );
-        }
-    });
-}
 
+        plant.sunlight =
+            Math.max(
+                0,
+                plant.sunlight -
+                hours * 3
+            );
 
-/* =====================================================
-   PLANT HEALTH
-   ===================================================== */
-
-function updatePlantHealth(plant) {
-
-    if (plant.water < 15) {
-        plant.health -= 3;
-    }
-
-    if (plant.sunlight < 15) {
-        plant.health -= 2;
-    }
-
-    if (plant.water > 30 && plant.sunlight > 30) {
-        plant.health += 1;
-    }
-
-    plant.health =
-        Math.max(
-            0,
-            Math.min(100, plant.health)
+        growPlant(
+            plant,
+            hours * 5
         );
-}
+    }
+);
 
 
 /* =====================================================
-   GROW PLANT
-   ===================================================== */
+   SELECTED PLANT
+===================================================== */
 
-function growPlant(plant, amount = 1) {
+let selectedPlant = null;
+
+
+function selectPlant(id) {
+
+    selectedPlant = id;
+
+    updateSelectedUI();
+}
+
+
+function updateSelectedUI() {
+
+    const box =
+        document.getElementById(
+            "selected"
+        );
+
+    if (!selectedPlant) {
+
+        box.innerHTML = `
+            <h3>🌱 Select a plant</h3>
+            <p>Click a plant in your garden.</p>
+        `;
+
+        return;
+    }
+
+
+    const plant =
+        save.plants.find(
+            p => p.id === selectedPlant
+        );
+
+    if (!plant) return;
+
 
     const info =
-        plantTypes[plant.type];
+        PLANTS[plant.type];
 
-    if (plant.mature) return;
+
+    box.innerHTML = `
+
+        <h3>
+            ${info.emoji}
+            ${info.name}
+        </h3>
+
+        <p>
+            Growth:
+            ${Math.floor(plant.growth)}%
+        </p>
+
+        <label>💧 Water</label>
+        <div class="bar">
+            <div
+                class="fill water"
+                style="width:${plant.water}%">
+            </div>
+        </div>
+
+        <label>☀️ Sunlight</label>
+        <div class="bar">
+            <div
+                class="fill sun"
+                style="width:${plant.sunlight}%">
+            </div>
+        </div>
+
+        <label>❤️ Health</label>
+        <div class="bar">
+            <div
+                class="fill health"
+                style="width:${plant.health}%">
+            </div>
+        </div>
+
+        <button id="waterButton">
+            💧 Water
+        </button>
+
+        <button id="sunButton">
+            ☀️ Give Sunlight
+        </button>
+    `;
+
+
+    document
+        .getElementById("waterButton")
+        .onclick =
+        () => waterPlant(plant.id);
+
+
+    document
+        .getElementById("sunButton")
+        .onclick =
+        () => giveSunlight(plant.id);
+}
+
+
+/* =====================================================
+   WATER
+===================================================== */
+
+function waterPlant(id) {
+
+    const plant =
+        save.plants.find(
+            p => p.id === id
+        );
+
+    if (!plant) return;
+
+
+    plant.water =
+        Math.min(
+            100,
+            plant.water + 30
+        );
+
+
+    plant.health =
+        Math.min(
+            100,
+            plant.health + 3
+        );
+
+
+    showMessage(
+        "💧 Your plant was watered!"
+    );
+
+    saveGame();
+
+    updateSelectedUI();
+}
+
+
+/* =====================================================
+   SUNLIGHT
+===================================================== */
+
+function giveSunlight(id) {
+
+    const plant =
+        save.plants.find(
+            p => p.id === id
+        );
+
+    if (!plant) return;
+
+
+    plant.sunlight =
+        Math.min(
+            100,
+            plant.sunlight + 25
+        );
+
+
+    plant.health =
+        Math.min(
+            100,
+            plant.health + 2
+        );
+
+
+    showMessage(
+        "☀️ Your plant enjoyed the sunlight!"
+    );
+
+    saveGame();
+
+    updateSelectedUI();
+}
+
+
+/* =====================================================
+   GROWTH
+===================================================== */
+
+function growPlant(
+    plant,
+    amount = .1
+) {
 
     if (
         plant.water < 20 ||
@@ -477,6 +1091,11 @@ function growPlant(plant, amount = 1) {
         return;
     }
 
+
+    const info =
+        PLANTS[plant.type];
+
+
     const quality =
         (
             plant.water +
@@ -484,732 +1103,496 @@ function growPlant(plant, amount = 1) {
             plant.health
         ) / 300;
 
+
     plant.growth +=
         amount *
-        info.growthSpeed *
+        info.growth *
         quality;
 
-    if (plant.growth >= 100) {
+
+    if (
+        plant.growth >= 100
+    ) {
 
         plant.growth = 100;
 
-        plant.mature = true;
+        if (!plant.mature) {
 
-        plant.stage = 4;
+            plant.mature = true;
 
-        game.plantsGrown++;
+            save.coins += 50;
 
-        game.coins += 50;
+            addXP(50);
 
-        addXP(50);
-
-        checkAchievements();
-    }
-
-    else {
-
-        plant.stage =
-            Math.floor(
-                plant.growth / 25
+            showMessage(
+                `🌟 Your ${info.name} is fully grown! +50 coins`
             );
+        }
     }
+
+
+    updatePlantVisual(
+        plant
+    );
 }
 
 
 /* =====================================================
-   WATER
-   ===================================================== */
+   GAME SIMULATION
+===================================================== */
 
-function waterPlant(id) {
+setInterval(
+    () => {
 
-    const plant =
-        game.plants.find(
-            p => p.id === id
+        save.plants.forEach(
+            plant => {
+
+                const info =
+                    PLANTS[plant.type];
+
+
+                plant.water =
+                    Math.max(
+                        0,
+                        plant.water -
+                        .35 *
+                        info.waterNeed
+                    );
+
+
+                plant.sunlight =
+                    Math.max(
+                        0,
+                        plant.sunlight -
+                        .25 *
+                        info.sunNeed
+                    );
+
+
+                if (
+                    plant.water < 15 ||
+                    plant.sunlight < 15
+                ) {
+
+                    plant.health =
+                        Math.max(
+                            0,
+                            plant.health - .7
+                        );
+
+                } else {
+
+                    plant.health =
+                        Math.min(
+                            100,
+                            plant.health + .15
+                        );
+                }
+
+
+                growPlant(
+                    plant,
+                    .12
+                );
+            }
         );
 
-    if (!plant) return;
 
-    plant.water =
-        Math.min(
-            100,
-            plant.water + 30
-        );
+        updateSelectedUI();
 
-    game.watered++;
+        updateStats();
 
-    addXP(3);
+        saveGame();
 
-    checkAchievements();
-
-    saveGame();
-
-    render();
-}
-
-
-/* =====================================================
-   SUNLIGHT
-   ===================================================== */
-
-function giveSunlight(id) {
-
-    const plant =
-        game.plants.find(
-            p => p.id === id
-        );
-
-    if (!plant) return;
-
-    plant.sunlight =
-        Math.min(
-            100,
-            plant.sunlight + 25
-        );
-
-    game.sunlight++;
-
-    addXP(3);
-
-    checkAchievements();
-
-    saveGame();
-
-    render();
-}
-
-
-/* =====================================================
-   GAME TICK
-   ===================================================== */
-
-setInterval(() => {
-
-    game.plants.forEach(plant => {
-
-        const info =
-            plantTypes[plant.type];
-
-        plant.water -=
-            0.35 * info.waterNeed;
-
-        plant.sunlight -=
-            0.25 * info.sunNeed;
-
-        plant.water =
-            Math.max(0, plant.water);
-
-        plant.sunlight =
-            Math.max(0, plant.sunlight);
-
-        updatePlantHealth(plant);
-
-        growPlant(plant, 0.12);
-
-    });
-
-    randomEvent();
-
-    saveGame();
-
-    render();
-
-}, 10000);
+    },
+    10000
+);
 
 
 /* =====================================================
    BUY PLANT
-   ===================================================== */
+===================================================== */
 
-function buyPlant(type) {
+window.buyPlant =
+    function(type) {
 
-    const info =
-        plantTypes[type];
+        const info =
+            PLANTS[type];
 
-    if (game.coins < info.price) {
 
-        showEvent(
-            "❌ You don't have enough coins!"
+        if (
+            save.coins <
+            info.cost
+        ) {
+
+            showMessage(
+                "🪙 You don't have enough coins!"
+            );
+
+            return;
+        }
+
+
+        save.coins -=
+            info.cost;
+
+
+        addPlant(
+            type
         );
 
-        return;
-    }
 
-    game.coins -= info.price;
+        addXP(10);
 
-    game.plants.push(
-        createPlant(type)
-    );
+        showMessage(
+            `${info.emoji} You planted a ${info.name}!`
+        );
 
-    if (!game.unlocked.includes(type)) {
-        game.unlocked.push(type);
-    }
 
-    addXP(10);
+        saveGame();
 
-    saveGame();
-
-    render();
-}
+        updateStats();
+    };
 
 
 /* =====================================================
    XP
-   ===================================================== */
+===================================================== */
 
 function addXP(amount) {
 
-    game.xp += amount;
+    save.xp +=
+        amount;
+
 
     const required =
-        game.level * 100;
+        save.level * 100;
 
-    if (game.xp >= required) {
 
-        game.xp -= required;
+    if (
+        save.xp >= required
+    ) {
 
-        game.level++;
+        save.xp -=
+            required;
 
-        game.coins +=
-            game.level * 25;
+        save.level++;
 
-        showEvent(
-            `🎉 Level up! You reached level ${game.level}!`
+        save.coins +=
+            save.level * 25;
+
+
+        showMessage(
+            `⭐ Level ${save.level}! +${save.level * 25} coins`
         );
     }
 }
 
 
 /* =====================================================
-   RANDOM EVENTS
-   ===================================================== */
+   CLICKING PLANTS
+===================================================== */
 
-function randomEvent() {
+const raycaster =
+    new THREE.Raycaster();
 
-    if (Math.random() > 0.08) {
-        return;
-    }
+const mouse =
+    new THREE.Vector2();
 
-    game.events++;
 
-    const events = [
+renderer.domElement
+    .addEventListener(
+        "click",
+        event => {
 
-        () => {
+            mouse.x =
+                (event.clientX /
+                    innerWidth) *
+                    2 - 1;
 
-            game.plants.forEach(p => {
-                p.water =
-                    Math.min(
-                        100,
-                        p.water + 20
-                    );
-            });
+            mouse.y =
+                -(event.clientY /
+                    innerHeight) *
+                    2 + 1;
 
-            showEvent(
-                "🌧️ It started raining! Your plants got watered."
+
+            raycaster.setFromCamera(
+                mouse,
+                camera
             );
-        },
 
-        () => {
 
-            game.plants.forEach(p => {
-                p.sunlight =
-                    Math.min(
-                        100,
-                        p.sunlight + 15
-                    );
-            });
+            const objects = [];
 
-            showEvent(
-                "☀️ A sunny day boosted your plants!"
+
+            plantMeshes.forEach(
+                object => {
+
+                    object.plantMesh
+                        .traverse(
+                            child => {
+
+                                if (
+                                    child.isMesh
+                                ) {
+                                    objects.push(
+                                        child
+                                    );
+                                }
+                            }
+                        );
+                }
             );
-        },
 
-        () => {
 
-            game.coins += 30;
+            const hits =
+                raycaster.intersectObjects(
+                    objects
+                );
 
-            showEvent(
-                "🐝 A friendly bee visited and brought you 30 coins!"
-            );
-        },
 
-        () => {
-
-            game.plants.forEach(p => {
-                p.growth =
-                    Math.min(
-                        100,
-                        p.growth + 5
-                    );
-            });
-
-            showEvent(
-                "🌈 A magical rainbow appeared! Your plants grew!"
-            );
-        },
-
-        () => {
-
-            const plant =
-                game.plants[
-                    Math.floor(
-                        Math.random() *
-                        game.plants.length
-                    )
-                ];
-
-            if (plant) {
-                plant.health =
-                    Math.min(
-                        100,
-                        plant.health + 20
-                    );
+            if (
+                hits.length === 0
+            ) {
+                return;
             }
 
-            showEvent(
-                "🦋 A butterfly visited your garden!"
-            );
+
+            const hit =
+                hits[0].object;
+
+
+            for (
+                const [id, object]
+                of plantMeshes
+            ) {
+
+                let found = false;
+
+                object.plantMesh
+                    .traverse(
+                        child => {
+
+                            if (
+                                child === hit
+                            ) {
+                                found = true;
+                            }
+                        }
+                    );
+
+
+                if (found) {
+
+                    selectPlant(id);
+
+                    break;
+                }
+            }
         }
-    ];
+    );
 
-    events[
-        Math.floor(
-            Math.random() *
-            events.length
-        )
-    ]();
 
-    checkAchievements();
+/* =====================================================
+   SAVE
+===================================================== */
+
+function saveGame() {
+
+    save.lastPlayed =
+        Date.now();
+
+    localStorage.setItem(
+        "3DPlantLife",
+        JSON.stringify(save)
+    );
 }
 
 
 /* =====================================================
-   ACHIEVEMENTS
-   ===================================================== */
+   STATS
+===================================================== */
 
-const achievementList = [
-
-    {
-        id: "first",
-        name: "🌱 First Sprout",
-        description: "Grow your first plant.",
-        check: () =>
-            game.plantsGrown >= 1
-    },
-
-    {
-        id: "water",
-        name: "💧 Plant Parent",
-        description: "Water plants 25 times.",
-        check: () =>
-            game.watered >= 25
-    },
-
-    {
-        id: "sun",
-        name: "☀️ Sun Lover",
-        description: "Give plants sunlight 25 times.",
-        check: () =>
-            game.sunlight >= 25
-    },
-
-    {
-        id: "collector",
-        name: "🌿 Collector",
-        description: "Own 5 different plant types.",
-        check: () =>
-            game.unlocked.length >= 5
-    },
-
-    {
-        id: "rich",
-        name: "🪙 Garden Tycoon",
-        description: "Have 1,000 coins.",
-        check: () =>
-            game.coins >= 1000
-    },
-
-    {
-        id: "level5",
-        name: "⭐ Experienced Gardener",
-        description: "Reach level 5.",
-        check: () =>
-            game.level >= 5
-    }
-];
-
-
-function checkAchievements() {
-
-    achievementList.forEach(a => {
-
-        if (
-            a.check() &&
-            !game.achievements.includes(a.id)
-        ) {
-
-            game.achievements.push(a.id);
-
-            game.coins += 100;
-
-            showEvent(
-                `🏆 Achievement unlocked: ${a.name}`
-            );
-        }
-    });
-}
-
-
-/* =====================================================
-   RANDOM EVENT MESSAGE
-   ===================================================== */
-
-let eventTimeout;
-
-function showEvent(message) {
-
-    const element =
-        document.getElementById("event");
-
-    element.textContent =
-        message;
-
-    clearTimeout(eventTimeout);
-
-    eventTimeout =
-        setTimeout(() => {
-            element.textContent = "";
-        }, 5000);
-}
-
-
-/* =====================================================
-   PLANT VISUAL
-   ===================================================== */
-
-function getPlantVisual(plant) {
-
-    const info =
-        plantTypes[plant.type];
-
-    if (plant.health <= 0) {
-        return "🥀";
-    }
-
-    if (plant.growth < 25) {
-        return "🌱";
-    }
-
-    if (plant.growth < 50) {
-        return "🌿";
-    }
-
-    return info.emoji;
-}
-
-
-/* =====================================================
-   RENDER GARDEN
-   ===================================================== */
-
-function renderGarden() {
-
-    const garden =
-        document.getElementById("garden");
-
-    garden.innerHTML = "";
-
-    game.plants.forEach(plant => {
-
-        const info =
-            plantTypes[plant.type];
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "plant-card";
-
-        card.innerHTML = `
-
-            <h2>${info.name}</h2>
-
-            <div class="plant">
-                ${getPlantVisual(plant)}
-            </div>
-
-            <p>
-                Growth:
-                ${Math.floor(plant.growth)}%
-            </p>
-
-            <div class="bar-container">
-                💧 Water
-                <div class="bar">
-                    <div
-                        class="bar-fill water"
-                        style="width:${plant.water}%">
-                    </div>
-                </div>
-            </div>
-
-            <div class="bar-container">
-                ☀️ Sunlight
-                <div class="bar">
-                    <div
-                        class="bar-fill sun"
-                        style="width:${plant.sunlight}%">
-                    </div>
-                </div>
-            </div>
-
-            <div class="bar-container">
-                ❤️ Health
-                <div class="bar">
-                    <div
-                        class="bar-fill health"
-                        style="width:${plant.health}%">
-                    </div>
-                </div>
-            </div>
-
-            <button
-                class="water-btn"
-                data-water="${plant.id}">
-                💧 Water
-            </button>
-
-            <button
-                class="sun-btn"
-                data-sun="${plant.id}">
-                ☀️ Sunlight
-            </button>
-
-        `;
-
-        garden.appendChild(card);
-    });
-
-    document
-        .querySelectorAll("[data-water]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    waterPlant(
-                        Number(
-                            button.dataset.water
-                        )
-                    )
-            );
-        });
-
-    document
-        .querySelectorAll("[data-sun]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    giveSunlight(
-                        Number(
-                            button.dataset.sun
-                        )
-                    )
-            );
-        });
-}
-
-
-/* =====================================================
-   RENDER SHOP
-   ===================================================== */
-
-function renderShop() {
-
-    const shop =
-        document.getElementById("shop");
-
-    shop.innerHTML = "";
-
-    Object.entries(
-        plantTypes
-    ).forEach(([type, info]) => {
-
-        const item =
-            document.createElement("div");
-
-        item.className =
-            "shop-item";
-
-        item.innerHTML = `
-
-            <h3>
-                ${info.emoji}
-                ${info.name}
-            </h3>
-
-            <p>🪙 ${info.price} coins</p>
-
-            <p>
-                Growth:
-                ${info.growthSpeed}x
-            </p>
-
-            <button
-                class="buy-btn"
-                data-buy="${type}">
-                🌱 Buy
-            </button>
-        `;
-
-        shop.appendChild(item);
-    });
-
-    document
-        .querySelectorAll("[data-buy]")
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    buyPlant(
-                        button.dataset.buy
-                    )
-            );
-        });
-}
-
-
-/* =====================================================
-   RENDER ACHIEVEMENTS
-   ===================================================== */
-
-function renderAchievements() {
-
-    const container =
-        document.getElementById(
-            "achievements"
-        );
-
-    container.innerHTML = "";
-
-    achievementList.forEach(a => {
-
-        const unlocked =
-            game.achievements.includes(
-                a.id
-            );
-
-        const element =
-            document.createElement("div");
-
-        element.className =
-            "achievement " +
-            (unlocked ? "" : "locked");
-
-        element.innerHTML = `
-            <strong>
-                ${unlocked ? a.name : "🔒 Hidden Achievement"}
-            </strong>
-            <br>
-            <small>
-                ${a.description}
-            </small>
-        `;
-
-        container.appendChild(element);
-    });
-}
-
-
-/* =====================================================
-   RENDER STATS
-   ===================================================== */
-
-function renderStats() {
+function updateStats() {
 
     document.getElementById(
         "coins"
-    ).textContent = game.coins;
+    ).textContent =
+        Math.floor(save.coins);
+
 
     document.getElementById(
         "level"
-    ).textContent = game.level;
+    ).textContent =
+        save.level;
+
 
     document.getElementById(
-        "xp"
-    ).textContent = game.xp;
-
-    document.getElementById(
-        "plantsGrown"
-    ).textContent = game.plantsGrown;
-
-    document.getElementById(
-        "watered"
-    ).textContent = game.watered;
-
-    document.getElementById(
-        "sunlight"
-    ).textContent = game.sunlight;
-
-    document.getElementById(
-        "events"
-    ).textContent = game.events;
+        "plantCount"
+    ).textContent =
+        save.plants.length;
 }
 
 
 /* =====================================================
-   WEATHER
-   ===================================================== */
+   MESSAGE
+===================================================== */
 
-function renderWeather() {
+let messageTimer;
 
-    const weather =
+
+function showMessage(text) {
+
+    const message =
         document.getElementById(
-            "weather"
+            "message"
         );
 
-    const choices = [
-        "☀️ Sunny day",
-        "⛅ Partly cloudy",
-        "🌤️ Warm afternoon",
-        "🌥️ Cloudy day"
-    ];
 
-    weather.textContent =
-        choices[
-            Math.floor(
-                Math.random() *
-                choices.length
-            )
-        ];
+    message.textContent =
+        text;
+
+
+    message.style.opacity =
+        "1";
+
+
+    clearTimeout(
+        messageTimer
+    );
+
+
+    messageTimer =
+        setTimeout(
+            () => {
+
+                message.style.opacity =
+                    "0";
+
+            },
+            3000
+        );
 }
 
 
 /* =====================================================
-   MAIN RENDER
-   ===================================================== */
+   RESIZE
+===================================================== */
 
-function render() {
+window.addEventListener(
+    "resize",
+    () => {
 
-    renderGarden();
+        camera.aspect =
+            innerWidth /
+            innerHeight;
 
-    renderShop();
+        camera.updateProjectionMatrix();
 
-    renderAchievements();
-
-    renderStats();
-}
+        renderer.setSize(
+            innerWidth,
+            innerHeight
+        );
+    }
+);
 
 
 /* =====================================================
-   START GAME
-   ===================================================== */
+   DAY/NIGHT
+===================================================== */
 
-render();
+const clock =
+    new THREE.Clock();
 
-renderWeather();
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    const time =
+        clock.getElapsedTime();
+
+
+    /*
+       Slowly move the sun to
+       create a simple day cycle.
+    */
+
+    const sunAngle =
+        time * .03;
+
+
+    sun.position.x =
+        Math.cos(sunAngle) * 25;
+
+    sun.position.z =
+        Math.sin(sunAngle) * 25;
+
+    sun.position.y =
+        15 +
+        Math.sin(sunAngle) * 10;
+
+
+    const daylight =
+        Math.max(
+            .2,
+            (
+                Math.sin(sunAngle) + 1
+            ) / 2
+        );
+
+
+    sun.intensity =
+        .8 +
+        daylight * 2;
+
+
+    ambient.intensity =
+        .7 +
+        daylight * 1.2;
+
+
+    plantMeshes.forEach(
+        object => {
+
+            const plant =
+                object.data;
+
+
+            /*
+               Tiny idle animation.
+            */
+
+            object.plantMesh.rotation.y =
+                Math.sin(
+                    time +
+                    plant.id
+                ) * .025;
+
+            updatePlantVisual(
+                plant
+            );
+        }
+    );
+
+
+    controls.update();
+
+    renderer.render(
+        scene,
+        camera
+    );
+}
+
+
+updateStats();
+
+updateSelectedUI();
+
+animate();
 
 saveGame();
 
@@ -1217,3 +1600,4 @@ saveGame();
 
 </body>
 </html>
+```
